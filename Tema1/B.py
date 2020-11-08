@@ -1,4 +1,4 @@
-import socket
+import socket, pickle
 import sys
 #import security_utils
 #from security_utils import CipherMode
@@ -9,15 +9,6 @@ PORT_KM = 5001       # The port used by KM
 PORT_A = 5002        # The port used by A
 PORT_B = 5003        # The port used by B
 
-'''
-with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    s.connect((HOST, PORT_KM))
-    #s.sendall(b'Hello, world')
-    s.sendall(b'Hello, world')
-    data = s.recv(1024)
-
-print('Received', repr(data))
-'''
 def askKey(cipher_mode: CipherMode):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s_km:
         s_km.connect((HOST, PORT_KM))
@@ -34,7 +25,7 @@ def process_response(cipherMode, data):
     if (cipherMode == CipherMode.CBC):
         return data.decode('utf-8')
     elif (cipherMode == CipherMode.OFB):
-        return bytearray(data)
+        return pickle.loads(data)
 while True:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind((HOST, PORT_B))

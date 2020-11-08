@@ -1,4 +1,4 @@
-import socket
+import socket, pickle
 import sys
 #import security_utils
 #from security_utils import CipherMode
@@ -9,12 +9,13 @@ PORT_KM = 5001       # The port used by KM
 PORT_A = 5002        # The port used by A
 PORT_B = 5003        # The port used by B
 
-#askKey(CipherMode.CBC, "OLA")
-#askKey(CipherMode.OFB)
+def prepareReply(cyphermode,encryptedMessage ):
+    if (cyphermode == CipherMode.OFB):
+        return pickle.dumps(encryptedMessage)
+    return encryptedMessage
 
 def sendToB(cyphermode:CipherMode, msg, key):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s_b:
-        #s_km.connect((HOST, PORT_KM))
         s_b.connect((HOST, PORT_B))
         s_b.sendall(bytes(str(int(cyphermode)),'utf-8'))
         data = s_b.recv(1024)
@@ -26,17 +27,17 @@ def sendToB(cyphermode:CipherMode, msg, key):
             print("B responded with error:", response_str)
         elif (response_str == "1"):
             # Send messages to B with selected mode
-            # try:
-            encryptedMessage = ecryptMessage(cyphermode,key,msg)
-            print('encryptedMessage=', encryptedMessage)
-            s_b.sendall(encryptedMessage)
-            '''
+            try:
+                encryptedMessage = ecryptMessage(cyphermode,key,msg)
+                reply = prepareReply(cyphermode,encryptedMessage )
+                print('encryptedMessage=', reply)
+                s_b.sendall(reply)
+                
             except:
                 print("Unexpected error:", sys.exc_info()[0])
                 print("Unexpected error:", sys.exc_info()[1])
                 print("Unexpected error:", sys.exc_info()[2])
                 s_b.close()
-            '''
 
 def askKey(cipher_mode: CipherMode):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s_km:
@@ -56,7 +57,7 @@ def tema(cipher_mode:CipherMode, msg):
     sendToB(cipher_mode, msg, k1)
 
 # Main work
-msg = 'Tema 1. Sa speram ca se va decripta cum trebuie indiferent de numarul de caractrere din mesaj.'
+msg = 'Tema 1. Sa speram ca se va decripta cum trebuie indiferent de lungimea mesajului.'
 #tema(CipherMode.CBC, msg)
 tema(CipherMode.OFB, msg)
 
