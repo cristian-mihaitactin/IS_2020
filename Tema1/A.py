@@ -26,17 +26,17 @@ def sendToB(cyphermode:CipherMode, msg, key):
             print("B responded with error:", response_str)
         elif (response_str == "1"):
             # Send messages to B with selected mode
-            try:
-                encryptedMessage = ecryptMessage(cyphermode,key,msg)
-                print('encryptedMessage=', encryptedMessage)
-                s_b.sendall(encryptedMessage)
+            # try:
+            encryptedMessage = ecryptMessage(cyphermode,key,msg)
+            print('encryptedMessage=', encryptedMessage)
+            s_b.sendall(encryptedMessage)
+            '''
             except:
                 print("Unexpected error:", sys.exc_info()[0])
                 print("Unexpected error:", sys.exc_info()[1])
                 print("Unexpected error:", sys.exc_info()[2])
                 s_b.close()
-            
-
+            '''
 
 def askKey(cipher_mode: CipherMode):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s_km:
@@ -49,12 +49,14 @@ def askKey(cipher_mode: CipherMode):
         print('decryptedKey', decryptedKey)
         return decryptedKey
 
-def tema_cbc(msg):
+def tema(cipher_mode:CipherMode, msg):
     # Call KM for CBC Key
-    k1 = askKey(CipherMode.CBC)
+    k1 = askKey(cipher_mode)
     # Call B and start exchanging messages
-    sendToB(CipherMode.CBC, msg, k1)
-    
+    sendToB(cipher_mode, msg, k1)
+
 # Main work
-tema_cbc('Tema 1. Sa speram ca se va decripta cum trebuie indiferent de numarul de caractrere din mesaj.')
+msg = 'Tema 1. Sa speram ca se va decripta cum trebuie indiferent de numarul de caractrere din mesaj.'
+#tema(CipherMode.CBC, msg)
+tema(CipherMode.OFB, msg)
 

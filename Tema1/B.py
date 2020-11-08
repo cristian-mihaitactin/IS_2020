@@ -30,6 +30,11 @@ def askKey(cipher_mode: CipherMode):
         print('decryptedKey', decryptedKey)
         return decryptedKey
 
+def process_response(cipherMode, data):
+    if (cipherMode == CipherMode.CBC):
+        return data.decode('utf-8')
+    elif (cipherMode == CipherMode.OFB):
+        return bytearray(data)
 while True:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind((HOST, PORT_B))
@@ -38,7 +43,7 @@ while True:
         with conn:
             print('Connected by', addr)
             while True:
-                data = conn.recv(1024)
+                data = conn.recv(2048)
                 if not data:
                     break
 
@@ -58,8 +63,9 @@ while True:
                     conn.sendall("1".encode())
 
                     data = conn.recv(1024)
-                    str_received = data.decode('utf-8')
-                    print('B second data', str_received)
+                    response = process_response(cipherMode, data)
+                    
+                    print('B second data', response)
 
-                    decrypt_str = decrypt__CBC(key,str_received)
+                    decrypt_str = decryptMessage(cipherMode, key,response)
                     print('B decrypted:', decrypt_str)

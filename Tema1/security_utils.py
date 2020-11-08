@@ -51,17 +51,17 @@ class CipherMode(IntEnum):
 K3 = getK3()
 VI = getVI()
 
-def ecrypt_CBC(key,msg):
+def ecrypt_CBC(key,plain_text):
     hashkey = hashKey(key)
     cipher = AES.new(hashkey, AES.MODE_CBC, VI)
-    print (msg.encode())
-    print (len(msg.encode()))
-    if (len(msg.encode()) % 16 != 0):
-        msg = _pad(msg)
+    print (plain_text.encode())
+    print (len(plain_text.encode()))
+    if (len(plain_text.encode()) % 16 != 0):
+        plain_text = _pad(plain_text)
 
-    return base64.b64encode(VI + cipher.encrypt(msg.encode()))
+    return base64.b64encode(VI + cipher.encrypt(plain_text.encode()))
 
-def decrypt__CBC(key,encr_msg):
+def decrypt_CBC(key,encr_msg):
     hashkey = hashKey(key)
     encr_msg = base64.b64decode(encr_msg)
     iv = encr_msg[:AES.block_size]
@@ -69,13 +69,57 @@ def decrypt__CBC(key,encr_msg):
     return _unpad(cipher.decrypt(encr_msg[AES.block_size:])).decode('utf-8')
     #return cipher.decrypt(encr_msg[AES.block_size:]).decode('utf-8')
 
-def ecrypt_OFB(key,msg):
-    raise Exception("Not Implemented!")
+def ecrypt_OFB(key,plain_text):
+    pos = 0
+    cipherTextChunks = []
+    ocb_iv = VI
+    #originalIV = VI
+    key = hashKey(key)
+    cipher = AES.new(key, AES.MODE_ECB)
+    if (len(plain_text.encode()) % 16 != 0):
+        plain_text = _pad(plain_text)
+    # ?
+    plain_text = plain_text.encode()
+    # ?
+    while pos + 16 <= len(plain_text):
+        toXor = cipher.encrypt(VI)
+        nextPos = pos + 16
+        toEnc = plain_text[pos:nextPos]
+        cipherText = bytes([toXor[i] ^ toEnc[i] for i in range(16)])
+        cipherTextChunks.append(cipherText)
+        pos += 16
+        ocb_iv = toXor
+    return cipherTextChunks
+
+def decrypt_OFB(key,encr_msg):
+    plainText = b""
+    key = hashKey(key)
+    iv = VI
+    print('type(encr_msg)', type(encr_msg))
+    print('encr_msg', encr_msg)
+    cipher = AES.new(key, AES.MODE_ECB)
+    for chunk in encr_msg:
+        toXor = cipher.encrypt(VI)
+        plainText += bytes([toXor[i] ^ chunk[i] for i in range(15)])
+        iv = toXor
+    while plainText[-1] == 48:
+        plainText = plainText[0:-1]
+    if plainText[-1] == 49:
+        plainText = plainText[0:-1]
+    return plainText
 
 def ecryptMessage(cipher_mode:CipherMode, key, msg):
     if (cipher_mode == CipherMode.CBC):
         return ecrypt_CBC(key,msg)
     elif(cipher_mode == CipherMode.OFB):
         return ecrypt_OFB(key,msg)
+    else:
+        return 'Unsupported cipher mode'
+
+def decryptMessage(cipher_mode:CipherMode, key, encr_msg):
+    if (cipher_mode == CipherMode.CBC):
+        return decrypt_CBC(key,encr_msg)
+    elif(cipher_mode == CipherMode.OFB):
+        return decrypt_OFB(key,encr_msg)
     else:
         return 'Unsupported cipher mode'
