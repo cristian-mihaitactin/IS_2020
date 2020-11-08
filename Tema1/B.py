@@ -1,4 +1,5 @@
 import socket
+import sys
 #import security_utils
 #from security_utils import CipherMode
 from security_utils import *
@@ -27,7 +28,7 @@ def askKey(cipher_mode: CipherMode):
         #print('Received',data.decode())
         decryptedKey = AES_dencrypt_singleblock(data)
         print('decryptedKey', decryptedKey)
-
+        return decryptedKey
 
 while True:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -40,10 +41,25 @@ while True:
                 data = conn.recv(1024)
                 if not data:
                     break
-                #print('KM Received', repr(data))
-                print('KM Received', data.decode('utf-8'))
-                print('KM Cipher Received', CipherMode(int(data.decode('utf-8'))))
-                #print('KM Received', int.from_bytes( data, byteorder='little'))
-                
-                conn.sendall(data)
 
+                print('B Received', data.decode('utf-8'))
+                try:
+                    cipherMode = CipherMode(int(data.decode('utf-8')))
+                    print('B Cipher Received', cipherMode)
+                    key = askKey(cipherMode)
+                    print('B Key  Received', key)
+                    #print('KM Received', int.from_bytes( data, byteorder='little'))
+                except:
+                    print("Unexpected error:", sys.exc_info()[0])
+                    print('B Returning (-1)') 
+
+                    conn.sendall("-1".encode())
+                else:
+                    conn.sendall("1".encode())
+
+                    data = conn.recv(1024)
+                    str_received = data.decode('utf-8')
+                    print('B second data', str_received)
+
+                    decrypt_str = decrypt__CBC(key,str_received)
+                    print('B decrypted:', decrypt_str)

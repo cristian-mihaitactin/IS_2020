@@ -51,4 +51,31 @@ class CipherMode(IntEnum):
 K3 = getK3()
 VI = getVI()
 
+def ecrypt_CBC(key,msg):
+    hashkey = hashKey(key)
+    cipher = AES.new(hashkey, AES.MODE_CBC, VI)
+    print (msg.encode())
+    print (len(msg.encode()))
+    if (len(msg.encode()) % 16 != 0):
+        msg = _pad(msg)
 
+    return base64.b64encode(VI + cipher.encrypt(msg.encode()))
+
+def decrypt__CBC(key,encr_msg):
+    hashkey = hashKey(key)
+    encr_msg = base64.b64decode(encr_msg)
+    iv = encr_msg[:AES.block_size]
+    cipher = AES.new(hashkey, AES.MODE_CBC, iv)
+    return _unpad(cipher.decrypt(encr_msg[AES.block_size:])).decode('utf-8')
+    #return cipher.decrypt(encr_msg[AES.block_size:]).decode('utf-8')
+
+def ecrypt_OFB(key,msg):
+    raise Exception("Not Implemented!")
+
+def ecryptMessage(cipher_mode:CipherMode, key, msg):
+    if (cipher_mode == CipherMode.CBC):
+        return ecrypt_CBC(key,msg)
+    elif(cipher_mode == CipherMode.OFB):
+        return ecrypt_OFB(key,msg)
+    else:
+        return 'Unsupported cipher mode'
