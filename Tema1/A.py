@@ -32,7 +32,6 @@ def sendToB(cyphermode:CipherMode, msg, key):
                 reply = prepareReply(cyphermode,encryptedMessage )
                 print('encryptedMessage=', reply)
                 s_b.sendall(reply)
-                
             except:
                 print("Unexpected error:", sys.exc_info()[0])
                 print("Unexpected error:", sys.exc_info()[1])
@@ -58,6 +57,6 @@ def tema(cipher_mode:CipherMode, msg):
 
 # Main work
 msg = 'Tema 1. Sa speram ca se va decripta cum trebuie indiferent de lungimea mesajului.'
-#tema(CipherMode.CBC, msg)
+tema(CipherMode.CBC, msg)
 tema(CipherMode.OFB, msg)
 

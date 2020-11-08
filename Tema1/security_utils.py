@@ -98,16 +98,10 @@ def decrypt_OFB(key,encr_msg):
     #print('type(encr_msg)', type(encr_msg))
     #print('encr_msg', encr_msg)
     cipher = AES.new(key, AES.MODE_ECB)
-    for chunk in encr_msg:
+    for block in encr_msg:
         toXor = cipher.encrypt(VI)
-        plainText += bytes([toXor[i] ^ chunk[i] for i in range(15)])
+        plainText += bytes([toXor[i] ^ block[i] for i in range(16)])
         iv = toXor
-    '''
-    while plainText[-1] == 48:
-        plainText = plainText[0:-1]
-    if plainText[-1] == 49:
-        plainText = plainText[0:-1]
-    '''
     return _unpad(plainText).decode()
 
 def ecryptMessage(cipher_mode:CipherMode, key, msg):
