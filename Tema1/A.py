@@ -1,6 +1,7 @@
 import socket
-import security_utils
-from security_utils import CipherMode
+#import security_utils
+#from security_utils import CipherMode
+from security_utils import *
 
 HOST = '127.0.0.1'  # The server's hostname or IP address
 PORT_KM = 5001       # The port used by KM
@@ -28,8 +29,10 @@ def askKey(cipher_mode: CipherMode):
         s_km.sendall(bytes(str(int(cipher_mode)),'utf-8'))
         
         data = s_km.recv(1024)
-        #print('Received', repr(data))
-        print('Received',data.decode())
+        print('Received', repr(data))
+        #print('Received',data.decode())
+        decryptedKey = AES_dencrypt_singleblock(data)
+        print('decryptedKey', decryptedKey)
 
 askKey(CipherMode.CBC)
 askKey(CipherMode.OFB)

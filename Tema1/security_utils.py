@@ -1,21 +1,48 @@
 import base64
-import AES
+import hashlib
+from Crypto.Cipher import AES
+from Crypto import Random
+
 import random
 
 from enum import IntEnum, unique
 
 def getRandom128():
     return base64.b16encode(random.getrandbits(128).to_bytes(16, byteorder='little')).decode()
+    #return hashlib.sha256(bs64.encode('utf-8')).digest()
+    #return hashlib.sha256(str(random.getrandbits(256)).encode('utf-8')).hexdigest()
 
 def getK3():
     f = open("public_k3.txt", "r").read()
     return f
 
 def getVI():
-    f = open("public_VI.txt", "r").read()
-    VI_f = [s for s in f]
-    return VI_f
+    with open("public_VI.txt", "rb") as f:
+        data = f.read()
+        print('IV:',data)
+        return data
 
+def hashKey(plain_key):
+    return hashlib.sha256(plain_key.encode()).digest()
+
+def AES_encrypt_singleblock(plain):
+    hash_key = hashKey(K3)
+    cipher = AES.new(hash_key, AES.MODE_CBC, VI)
+    plain = _pad(plain)
+
+    return base64.b64encode(VI + cipher.encrypt(plain.encode()))
+
+def AES_dencrypt_singleblock(encrypted):
+    encrypted = base64.b64decode(encrypted)
+    iv = encrypted[:AES.block_size]
+    cipher = AES.new(hashKey(K3), AES.MODE_CBC, iv)
+    return _unpad(cipher.decrypt(encrypted[AES.block_size:])).decode('utf-8')
+
+def _pad(st):
+        return st + (AES.block_size - len(st) % AES.block_size) * chr(AES.block_size - len(st) % AES.block_size)
+
+def _unpad(st):
+        return st[:-ord(st[len(st)-1:])]
 @unique
 class CipherMode(IntEnum):
     CBC = 1
